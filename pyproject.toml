@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nupack-campaign"
+version = "0.1.0"
+description = "Persisted parameter sweeps and SQL based candidate selection for DNA designs"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "SQLAlchemy>=2.0",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "PyYAML>=6.0",
+]
+
+# NUPACK is not on PyPI and needs a licence, so it is not listed as a
+# dependency. Install it separately from nupack.org if you want real numbers.
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "matplotlib>=3.7", "jupyter>=1.0", "ruff>=0.4"]
+
+[project.scripts]
+nupack-campaign = "nupack_campaign.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

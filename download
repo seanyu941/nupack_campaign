@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+
+# The demo database is rebuilt by `make demo` in a few seconds, so it is not
+# worth versioning. Drop the ignore if you want to ship a populated database.
+data/campaign.db
+data/campaign.db-wal
+data/campaign.db-shm
+data/shortlist.csv
+.ruff_cache/
