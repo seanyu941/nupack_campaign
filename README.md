@@ -106,7 +106,7 @@ python -m nupack_campaign.cli trends --list  # what can be grouped on
              9 1081                -6.876 1.873                  3.990                 9.354
 ```
 
-Twenty one dimensions are available. From the design metadata: `truncation`,
+Twenty dimensions are available. From the design metadata: `truncation`,
 `truncation_5prime`, `truncation_3prime`, `truncation_pair`, `gc`, `length`,
 `num_mutations`, `mutation_type`, `transitions`, `transversions`, `position`,
 `position_2`, `substitution`, `original_base`, `variant_class`. From the
@@ -205,7 +205,8 @@ at position 0. `TargetAligner` slides each design along the target and takes the
 window with the most complementary positions. Because the two strands run
 antiparallel, the design's reverse complement read 5' to 3' is what should match
 a target window directly, which turns the search into a plain comparison that
-numpy does in one pass per design. Aligning all 54,660 designs takes 0.58s.
+numpy does in one pass per design. Aligning all 54,660 designs takes about 0.5s, roughly 4x the nested-loop
+version and returning identical windows.
 
 The geometry it recovers matches the scan metadata without being told about it:
 the binding window starts at offset `51 + trunc_3prime`, and trimming the 5' end
@@ -235,18 +236,14 @@ SEARCH ref USING AUTOMATIC COVERING INDEX (trunc_5prime=? AND trunc_3prime=?) LE
 it covers the filter and the sort. No scan of `results`, which at 109,320 rows
 is the only table large enough to care about.
 
-Two things had to change to get that plan:
+`ANALYZE` runs after every bulk load so the planner works from real table sizes.
+Worth being straight about this one: on the queries here it changes neither the
+plan nor the timings, so it is cheap insurance rather than a tuning win. An
+earlier version of this README claimed a 2.3x speedup from it, which turned out
+to be cold cache rather than the statistics.
 
-1. The `reference` CTE originally drove from `results` and checked
-   `num_mutations` on each row, reading all 54,660 to find 30. It now drives
-   from `variants` through `idx_variants_reference_lookup` and fetches only
-   those 30 results.
-2. `ANALYZE` runs after every bulk load. Without table statistics SQLite picks
-   the wrong join order for the reference join and falls back to scanning the
-   materialised CTE. With them it builds an automatic covering index and a bloom
-   filter. The trend query goes from 0.21s to 0.09s.
-
-Current timings on the full scan: ranking 0.36s, trends 0.09s, database 26 MB.
+Current timings on the full scan: ranking about 0.35s, trend aggregates under
+0.2s, database 26 MB.
 
 ## Engines
 

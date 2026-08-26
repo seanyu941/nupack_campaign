@@ -48,12 +48,10 @@ reference AS (
     -- would fold the cost of truncation into every ddG and swamp the mutation
     -- signal, since a scan usually trims several bases.
     --
-    -- Driven from variants rather than from the scored CTE on purpose. Starting
-    -- here finds the handful of unmutated rows through
-    -- idx_variants_reference_lookup and then fetches just those results.
-    -- Starting from results instead means reading every row in the run and
-    -- checking num_mutations on each one, which on a 54k scan is three orders
-    -- of magnitude more work for the same 30 rows.
+    -- Driven from variants rather than from the scored CTE, which states the
+    -- intent directly: find the handful of unmutated designs, then fetch their
+    -- results. SQLite reorders both forms to the same plan on this data, so the
+    -- choice is about readability rather than speed.
     SELECT
         v.trunc_5prime,
         v.trunc_3prime,

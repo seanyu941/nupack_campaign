@@ -101,11 +101,13 @@ def _tidy(statement: str) -> str:
 def analyze_database(session: Session) -> None:
     """Refresh the query planner's table statistics.
 
-    Worth running after a bulk load and not much else. Without stats SQLite
-    guesses at join order, and on the 54k row scan it picks the wrong driving
-    table for the reference join: the plan falls back to scanning the
-    materialised CTE instead of building an automatic covering index over it.
-    Measured on that scan, ANALYZE takes the trend query from 0.21s to 0.09s.
+    Standard practice after a bulk load, so the planner is choosing join order
+    from real table sizes rather than its built-in guesses.
+
+    Measured on the 54k row scan it does not change the plan or the timings for
+    the queries in this repo, so treat it as cheap insurance for query shapes
+    that are not covered here rather than as a tuning step with a number behind
+    it. It costs well under a second on this data.
 
     Runs on the session's own connection rather than opening a new one, because
     an in-memory SQLite database is per-connection and a second connection would

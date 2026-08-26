@@ -29,9 +29,8 @@ WITH scoped AS (
 reference AS (
     -- One unmutated baseline per truncation per condition.
     --
-    -- Driven from variants so the small set of unmutated rows is found through
-    -- idx_variants_reference_lookup instead of by reading every result in the
-    -- run and checking num_mutations on each one.
+    -- Driven from variants, which states the intent directly: find the handful
+    -- of unmutated designs, then fetch their results.
     SELECT
         r.condition_id,
         v.trunc_5prime,
